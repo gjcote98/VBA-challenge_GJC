@@ -1,0 +1,81 @@
+Sub Stocks()
+
+Dim ws As Worksheet
+Dim starting_ws As Worksheet
+Set starting_ws = ActiveSheet
+
+For Each ws In ThisWorkbook.Worksheets
+  ws.Activate
+  
+  'define variables
+  Dim ticker_symbol As String
+  Dim yearly_change As Double
+  Dim yearly_percent_change As Double
+  Dim total_stock_volume As Double
+  Dim j As Integer
+  Dim begin As Long
+  Dim lastrow As Long
+  
+  'define definitions of variables
+  total_stock_volume = 0
+  j = 0
+  begin = 2
+  
+  'define headers
+  Cells(1, 9).Value = "Ticker"
+  Cells(1, 10).Value = "Yearly Change"
+  Cells(1, 11).Value = "Percent Change"
+  Cells(1, 12).Value = "Total Stock Volume"
+  
+  Columns("I:L").EntireColumn.AutoFit
+  lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+
+For i = 2 To lastrow
+    If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+      total_stock_volume = total_stock_volume + Cells(i, 7).Value
+      ticker_symbol = Cells(i, 1).Value
+      If total_stock_volume = 0 Then
+                
+                ' print the results
+                Range("I" & 2 + j).Value = Cells(i, 1).Value
+                Range("J" & 2 + j).Value = 0
+                Range("K" & 2 + j).Value = "%" & 0
+                Range("L" & 2 + j).Value = 0
+      Else
+                If Cells(begin, 3) = 0 Then
+                    For find_value = begin To i
+                        If Cells(find_value, 3).Value <> 0 Then
+                            begin = find_value
+                            Exit For
+                        End If
+                     Next find_value
+                End If
+            yearly_change = Cells(i, 6) - Cells(begin, 3)
+            yearly_percent_change = Round((yearly_change / Cells(begin, 3)) * 100, 2)
+            begin = i + 1
+            
+            Range("I" & 2 + j).Value = ticker_symbol
+            Range("J" & 2 + j).Value = yearly_change
+            Range("K" & 2 + j).Value = yearly_percent_change & "%"
+            Range("L" & 2 + j).Value = total_stock_volume
+                
+                'conditional formatting - fix
+                If Cells(i, 10) <= 0 Then
+                     Range("J" & 2 + j).Interior.ColorIndex = 3
+                Else
+                     Range("J" & 2 + j).Interior.ColorIndex = 4
+                End If
+      End If
+      
+      'reset values
+      j = j + 1
+      total_stock_volume = 0
+      yearly_change = 0
+    Else
+      total_stock_volume = total_stock_volume + Cells(i, 7).Value
+    End If
+Next i
+ws.Cells(1, 1) = 1
+Next
+    starting_ws.Activate
+End Sub
